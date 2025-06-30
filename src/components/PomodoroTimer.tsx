@@ -426,13 +426,13 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
   const getStateColor = () => {
     switch (currentState) {
       case 'work':
-        return 'text-blue-600';
+        return 'text-blue-600 dark:text-blue-400';
       case 'shortBreak':
-        return 'text-green-600';
+        return 'text-green-600 dark:text-green-400';
       case 'longBreak':
-        return 'text-purple-600';
+        return 'text-purple-600 dark:text-purple-400';
       default:
-        return 'text-blue-600';
+        return 'text-blue-600 dark:text-blue-400';
     }
   };
 
@@ -453,9 +453,9 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
   if (!isInitialized) {
     return (
       <div className="max-w-sm mx-auto">
-        <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl border border-white/20 overflow-hidden">
+        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-3xl shadow-xl border border-white/20 dark:border-gray-700/20 overflow-hidden">
           <div className="px-8 py-16 text-center">
-            <div className="text-lg text-gray-600">Loading...</div>
+            <div className="text-lg text-gray-600 dark:text-gray-300">Loading...</div>
           </div>
         </div>
       </div>
@@ -466,11 +466,11 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
     <div className="max-w-sm mx-auto">
       {/* Current Task Display */}
       {currentTask && (
-        <div className="mb-6 p-4 bg-blue-50/80 backdrop-blur-xl rounded-2xl border border-blue-200/50">
+        <div className="mb-6 p-4 bg-blue-50/80 dark:bg-blue-900/30 backdrop-blur-xl rounded-2xl border border-blue-200/50 dark:border-blue-700/50">
           <div className="text-center">
-            <div className="text-sm font-medium text-blue-700 mb-1">Working on</div>
-            <div className="font-semibold text-blue-900">{currentTask.title}</div>
-            <div className="text-xs text-blue-600 mt-1">
+            <div className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">Working on</div>
+            <div className="font-semibold text-blue-900 dark:text-blue-100">{currentTask.title}</div>
+            <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">
               {currentTask.completedPomodoros}/{currentTask.estimatedPomodoros} pomodoros
             </div>
           </div>
@@ -478,27 +478,27 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
       )}
 
       {/* Main Timer Card */}
-      <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl border border-white/20 overflow-hidden">
+      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-3xl shadow-xl border border-white/20 dark:border-gray-700/20 overflow-hidden">
         {/* Header */}
         <div className="px-8 pt-8 pb-4">
           <div className="flex items-center justify-between mb-2">
-            <h1 className="text-lg font-semibold text-gray-900 tracking-tight">Timer</h1>
+            <h1 className="text-lg font-semibold text-gray-900 dark:text-white tracking-tight">Timer</h1>
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => setSettings(prev => ({ ...prev, soundEnabled: !prev.soundEnabled }))}
-                className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-200 flex items-center justify-center"
+                className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200 flex items-center justify-center"
               >
                 {settings.soundEnabled ? (
-                  <Volume2 className="h-4 w-4 text-gray-600" />
+                  <Volume2 className="h-4 w-4 text-gray-600 dark:text-gray-300" />
                 ) : (
-                  <VolumeX className="h-4 w-4 text-gray-600" />
+                  <VolumeX className="h-4 w-4 text-gray-600 dark:text-gray-300" />
                 )}
               </button>
               <button
                 onClick={() => setShowSettings(!showSettings)}
-                className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-200 flex items-center justify-center"
+                className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200 flex items-center justify-center"
               >
-                <Settings className="h-4 w-4 text-gray-600" />
+                <Settings className="h-4 w-4 text-gray-600 dark:text-gray-300" />
               </button>
             </div>
           </div>
@@ -513,7 +513,7 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
         {/* Timer Display */}
         <div className="px-8 pb-6">
           <div className="text-center mb-8">
-            <div className="text-7xl font-light text-gray-900 tracking-tighter mb-4">
+            <div className="text-7xl font-light text-gray-900 dark:text-white tracking-tighter mb-4">
               {formatTime(timeLeft)}
             </div>
             
@@ -527,7 +527,7 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
                   stroke="currentColor"
                   strokeWidth="6"
                   fill="transparent"
-                  className="text-gray-200"
+                  className="text-gray-200 dark:text-gray-700"
                 />
                 <circle
                   cx="60"
@@ -538,13 +538,13 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
                   fill="transparent"
                   strokeDasharray={`${2 * Math.PI * 54}`}
                   strokeDashoffset={`${2 * Math.PI * 54 * (1 - getProgress() / 100)}`}
-                  className={currentState === 'work' ? 'text-blue-500' : currentState === 'shortBreak' ? 'text-green-500' : 'text-purple-500'}
+                  className={currentState === 'work' ? 'text-blue-500 dark:text-blue-400' : currentState === 'shortBreak' ? 'text-green-500 dark:text-green-400' : 'text-purple-500 dark:text-purple-400'}
                   strokeLinecap="round"
                   style={{ transition: 'stroke-dashoffset 1s ease-in-out' }}
                 />
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-sm font-medium text-gray-600">
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
                   {Math.round(getProgress())}%
                 </span>
               </div>
@@ -557,12 +557,12 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
               onClick={toggleTimer}
               className={`w-16 h-16 rounded-full flex items-center justify-center transition-all duration-200 shadow-lg ${
                 isRunning 
-                  ? 'bg-gray-100 hover:bg-gray-200 text-gray-700' 
+                  ? 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300' 
                   : currentState === 'work' 
-                    ? 'bg-blue-500 hover:bg-blue-600 text-white shadow-blue-200' 
+                    ? 'bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 text-white shadow-blue-200 dark:shadow-blue-800' 
                     : currentState === 'shortBreak'
-                      ? 'bg-green-500 hover:bg-green-600 text-white shadow-green-200'
-                      : 'bg-purple-500 hover:bg-purple-600 text-white shadow-purple-200'
+                      ? 'bg-green-500 dark:bg-green-600 hover:bg-green-600 dark:hover:bg-green-700 text-white shadow-green-200 dark:shadow-green-800'
+                      : 'bg-purple-500 dark:bg-purple-600 hover:bg-purple-600 dark:hover:bg-purple-700 text-white shadow-purple-200 dark:shadow-purple-800'
               }`}
             >
               {isRunning ? (
@@ -574,14 +574,14 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
             
             <button
               onClick={resetTimer}
-              className="w-16 h-16 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center justify-center transition-all duration-200 shadow-lg"
+              className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 flex items-center justify-center transition-all duration-200 shadow-lg"
             >
               <RotateCcw className="h-5 w-5" />
             </button>
 
             <button
               onClick={skipSession}
-              className="w-16 h-16 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center justify-center transition-all duration-200 shadow-lg"
+              className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 flex items-center justify-center transition-all duration-200 shadow-lg"
             >
               <SkipForward className="h-5 w-5" />
             </button>
@@ -589,10 +589,10 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
 
           {/* Session Info */}
           <div className="text-center space-y-1 mb-6">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               Session {completedSessions + 1}
             </p>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               {settings.sessionsUntilLongBreak - (completedSessions % settings.sessionsUntilLongBreak)} until long break
             </p>
           </div>
@@ -607,8 +607,8 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
               }}
               className={`px-4 py-2 rounded-full text-xs font-medium transition-colors duration-200 ${
                 currentState === 'work' 
-                  ? 'bg-blue-100 text-blue-700' 
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300' 
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
             >
               Focus
@@ -621,8 +621,8 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
               }}
               className={`px-4 py-2 rounded-full text-xs font-medium transition-colors duration-200 ${
                 currentState === 'shortBreak' 
-                  ? 'bg-green-100 text-green-700' 
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300' 
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
             >
               Break
@@ -635,8 +635,8 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
               }}
               className={`px-4 py-2 rounded-full text-xs font-medium transition-colors duration-200 ${
                 currentState === 'longBreak' 
-                  ? 'bg-purple-100 text-purple-700' 
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300' 
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
             >
               Long Break
@@ -647,13 +647,13 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
 
       {/* Settings Panel */}
       {showSettings && (
-        <div className="mt-6 bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl border border-white/20 overflow-hidden">
+        <div className="mt-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-3xl shadow-xl border border-white/20 dark:border-gray-700/20 overflow-hidden">
           <div className="px-8 py-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-6 tracking-tight">Settings</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6 tracking-tight">Settings</h2>
             
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Focus Duration
                 </label>
                 <div className="relative">
@@ -666,16 +666,16 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
                       ...prev,
                       workDuration: parseInt(e.target.value) * 60
                     }))}
-                    className="w-full px-4 py-3 bg-gray-50 border-0 rounded-2xl text-gray-900 placeholder-gray-500 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-200"
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border-0 rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:bg-white dark:focus:bg-gray-600 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:outline-none transition-all duration-200"
                   />
-                  <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-sm text-gray-500">
+                  <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-sm text-gray-500 dark:text-gray-400">
                     min
                   </span>
                 </div>
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Short Break
                 </label>
                 <div className="relative">
@@ -688,16 +688,16 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
                       ...prev,
                       shortBreakDuration: parseInt(e.target.value) * 60
                     }))}
-                    className="w-full px-4 py-3 bg-gray-50 border-0 rounded-2xl text-gray-900 placeholder-gray-500 focus:bg-white focus:ring-2 focus:ring-green-500 focus:outline-none transition-all duration-200"
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border-0 rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:bg-white dark:focus:bg-gray-600 focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:outline-none transition-all duration-200"
                   />
-                  <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-sm text-gray-500">
+                  <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-sm text-gray-500 dark:text-gray-400">
                     min
                   </span>
                 </div>
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Long Break
                 </label>
                 <div className="relative">
@@ -710,16 +710,16 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
                       ...prev,
                       longBreakDuration: parseInt(e.target.value) * 60
                     }))}
-                    className="w-full px-4 py-3 bg-gray-50 border-0 rounded-2xl text-gray-900 placeholder-gray-500 focus:bg-white focus:ring-2 focus:ring-purple-500 focus:outline-none transition-all duration-200"
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border-0 rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:bg-white dark:focus:bg-gray-600 focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:outline-none transition-all duration-200"
                   />
-                  <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-sm text-gray-500">
+                  <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-sm text-gray-500 dark:text-gray-400">
                     min
                   </span>
                 </div>
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Sessions Until Long Break
                 </label>
                 <input
@@ -731,19 +731,19 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
                     ...prev,
                     sessionsUntilLongBreak: parseInt(e.target.value)
                   }))}
-                  className="w-full px-4 py-3 bg-gray-50 border-0 rounded-2xl text-gray-900 placeholder-gray-500 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-200"
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border-0 rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:bg-white dark:focus:bg-gray-600 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:outline-none transition-all duration-200"
                 />
               </div>
 
-              <div className="space-y-4 pt-4 border-t border-gray-200">
+              <div className="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-gray-700">
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                     Sound Notifications
                   </label>
                   <button
                     onClick={() => setSettings(prev => ({ ...prev, soundEnabled: !prev.soundEnabled }))}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      settings.soundEnabled ? 'bg-blue-500' : 'bg-gray-300'
+                      settings.soundEnabled ? 'bg-blue-500 dark:bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'
                     }`}
                   >
                     <span
@@ -755,13 +755,13 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-gray-700">
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                     Auto-start Breaks
                   </label>
                   <button
                     onClick={() => setSettings(prev => ({ ...prev, autoStartBreaks: !prev.autoStartBreaks }))}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      settings.autoStartBreaks ? 'bg-green-500' : 'bg-gray-300'
+                      settings.autoStartBreaks ? 'bg-green-500 dark:bg-green-600' : 'bg-gray-300 dark:bg-gray-600'
                     }`}
                   >
                     <span
@@ -773,13 +773,13 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-gray-700">
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                     Auto-start Work
                   </label>
                   <button
                     onClick={() => setSettings(prev => ({ ...prev, autoStartWork: !prev.autoStartWork }))}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      settings.autoStartWork ? 'bg-blue-500' : 'bg-gray-300'
+                      settings.autoStartWork ? 'bg-blue-500 dark:bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'
                     }`}
                   >
                     <span
