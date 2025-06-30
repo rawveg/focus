@@ -9,7 +9,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.5.3-3178C6?logo=typescript)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4.11-38B2AC?logo=tailwind-css)](https://tailwindcss.com/)
 
-[🚀 Live Demo](https://focus.timgreen.ws) • [📖 Documentation](#features) • [🐛 Report Bug](https://github.com/rawveg/focus/issues) • [💡 Request Feature](https://github.com/rawveg/focus/issues)
+[🚀 Live Demo](https://focus.rawveg.co.uk) • [📖 Documentation](#features) • [🐛 Report Bug](https://github.com/rawveg/focus/issues) • [💡 Request Feature](https://github.com/rawveg/focus/issues)
 
 ---
 
