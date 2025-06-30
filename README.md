@@ -17,6 +17,10 @@
 
 </div>
 
+
+![](focus_screenshot.png)
+
+
 ## ✨ Features
 
 ### 🎯 **Pomodoro Timer**
