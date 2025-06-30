@@ -18,7 +18,8 @@ import {
   TrendingUp,
   Coffee,
   Moon,
-  Sun
+  Sun,
+  Play
 } from 'lucide-react';
 import { showSuccess } from '@/utils/toast';
 
@@ -26,7 +27,7 @@ interface Achievement {
   id: string;
   title: string;
   description: string;
-  icon: React.ReactNode;
+  iconName: string;
   category: 'focus' | 'consistency' | 'milestones' | 'special';
   requirement: number;
   currentProgress: number;
@@ -45,7 +46,7 @@ interface Goal {
   isCompleted: boolean;
   completedAt?: number;
   resetDate: number;
-  icon: React.ReactNode;
+  iconName: string;
 }
 
 interface SessionRecord {
@@ -62,6 +63,30 @@ const Achievements: React.FC = () => {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [sessions, setSessions] = useState<SessionRecord[]>([]);
   const [tasks, setTasks] = useState<any[]>([]);
+
+  // Icon mapping function
+  const getIcon = (iconName: string) => {
+    const iconProps = { className: "h-5 w-5" };
+    switch (iconName) {
+      case 'Play': return <Play {...iconProps} />;
+      case 'Target': return <Target {...iconProps} />;
+      case 'Zap': return <Zap {...iconProps} />;
+      case 'Crown': return <Crown {...iconProps} />;
+      case 'Trophy': return <Trophy {...iconProps} />;
+      case 'Flame': return <Flame {...iconProps} />;
+      case 'Calendar': return <Calendar {...iconProps} />;
+      case 'Medal': return <Medal {...iconProps} />;
+      case 'Star': return <Star {...iconProps} />;
+      case 'CheckCircle': return <CheckCircle {...iconProps} />;
+      case 'Award': return <Award {...iconProps} />;
+      case 'Clock': return <Clock {...iconProps} />;
+      case 'Sun': return <Sun {...iconProps} />;
+      case 'Moon': return <Moon {...iconProps} />;
+      case 'Coffee': return <Coffee {...iconProps} />;
+      case 'TrendingUp': return <TrendingUp {...iconProps} />;
+      default: return <Target {...iconProps} />;
+    }
+  };
 
   // Load data from localStorage
   useEffect(() => {
@@ -123,7 +148,7 @@ const Achievements: React.FC = () => {
         id: 'first-session',
         title: 'Getting Started',
         description: 'Complete your first focus session',
-        icon: <Play className="h-5 w-5" />,
+        iconName: 'Play',
         category: 'focus',
         requirement: 1,
         currentProgress: 0,
@@ -134,7 +159,7 @@ const Achievements: React.FC = () => {
         id: 'focus-10',
         title: 'Focused Mind',
         description: 'Complete 10 focus sessions',
-        icon: <Target className="h-5 w-5" />,
+        iconName: 'Target',
         category: 'focus',
         requirement: 10,
         currentProgress: 0,
@@ -145,7 +170,7 @@ const Achievements: React.FC = () => {
         id: 'focus-50',
         title: 'Concentration Master',
         description: 'Complete 50 focus sessions',
-        icon: <Zap className="h-5 w-5" />,
+        iconName: 'Zap',
         category: 'focus',
         requirement: 50,
         currentProgress: 0,
@@ -156,7 +181,7 @@ const Achievements: React.FC = () => {
         id: 'focus-100',
         title: 'Productivity Guru',
         description: 'Complete 100 focus sessions',
-        icon: <Crown className="h-5 w-5" />,
+        iconName: 'Crown',
         category: 'focus',
         requirement: 100,
         currentProgress: 0,
@@ -167,7 +192,7 @@ const Achievements: React.FC = () => {
         id: 'focus-500',
         title: 'Legendary Focus',
         description: 'Complete 500 focus sessions',
-        icon: <Trophy className="h-5 w-5" />,
+        iconName: 'Trophy',
         category: 'focus',
         requirement: 500,
         currentProgress: 0,
@@ -180,7 +205,7 @@ const Achievements: React.FC = () => {
         id: 'streak-3',
         title: 'Building Habits',
         description: 'Maintain a 3-day streak',
-        icon: <Flame className="h-5 w-5" />,
+        iconName: 'Flame',
         category: 'consistency',
         requirement: 3,
         currentProgress: 0,
@@ -191,7 +216,7 @@ const Achievements: React.FC = () => {
         id: 'streak-7',
         title: 'Week Warrior',
         description: 'Maintain a 7-day streak',
-        icon: <Calendar className="h-5 w-5" />,
+        iconName: 'Calendar',
         category: 'consistency',
         requirement: 7,
         currentProgress: 0,
@@ -202,7 +227,7 @@ const Achievements: React.FC = () => {
         id: 'streak-30',
         title: 'Monthly Master',
         description: 'Maintain a 30-day streak',
-        icon: <Medal className="h-5 w-5" />,
+        iconName: 'Medal',
         category: 'consistency',
         requirement: 30,
         currentProgress: 0,
@@ -213,7 +238,7 @@ const Achievements: React.FC = () => {
         id: 'streak-100',
         title: 'Unstoppable Force',
         description: 'Maintain a 100-day streak',
-        icon: <Star className="h-5 w-5" />,
+        iconName: 'Star',
         category: 'consistency',
         requirement: 100,
         currentProgress: 0,
@@ -226,7 +251,7 @@ const Achievements: React.FC = () => {
         id: 'first-task',
         title: 'Task Creator',
         description: 'Create your first task',
-        icon: <CheckCircle className="h-5 w-5" />,
+        iconName: 'CheckCircle',
         category: 'milestones',
         requirement: 1,
         currentProgress: 0,
@@ -237,7 +262,7 @@ const Achievements: React.FC = () => {
         id: 'complete-10-tasks',
         title: 'Task Crusher',
         description: 'Complete 10 tasks',
-        icon: <Award className="h-5 w-5" />,
+        iconName: 'Award',
         category: 'milestones',
         requirement: 10,
         currentProgress: 0,
@@ -248,7 +273,7 @@ const Achievements: React.FC = () => {
         id: 'focus-time-10h',
         title: 'Time Master',
         description: 'Accumulate 10 hours of focus time',
-        icon: <Clock className="h-5 w-5" />,
+        iconName: 'Clock',
         category: 'milestones',
         requirement: 36000, // 10 hours in seconds
         currentProgress: 0,
@@ -261,7 +286,7 @@ const Achievements: React.FC = () => {
         id: 'early-bird',
         title: 'Early Bird',
         description: 'Complete a session before 8 AM',
-        icon: <Sun className="h-5 w-5" />,
+        iconName: 'Sun',
         category: 'special',
         requirement: 1,
         currentProgress: 0,
@@ -272,7 +297,7 @@ const Achievements: React.FC = () => {
         id: 'night-owl',
         title: 'Night Owl',
         description: 'Complete a session after 10 PM',
-        icon: <Moon className="h-5 w-5" />,
+        iconName: 'Moon',
         category: 'special',
         requirement: 1,
         currentProgress: 0,
@@ -283,7 +308,7 @@ const Achievements: React.FC = () => {
         id: 'coffee-break',
         title: 'Coffee Connoisseur',
         description: 'Take 50 short breaks',
-        icon: <Coffee className="h-5 w-5" />,
+        iconName: 'Coffee',
         category: 'special',
         requirement: 50,
         currentProgress: 0,
@@ -297,7 +322,6 @@ const Achievements: React.FC = () => {
 
   // Initialize default goals
   const initializeGoals = () => {
-    const now = Date.now();
     const defaultGoals: Goal[] = [
       {
         id: 'daily-sessions',
@@ -308,7 +332,7 @@ const Achievements: React.FC = () => {
         currentProgress: 0,
         isCompleted: false,
         resetDate: getNextResetDate('daily'),
-        icon: <Target className="h-5 w-5" />
+        iconName: 'Target'
       },
       {
         id: 'daily-time',
@@ -319,7 +343,7 @@ const Achievements: React.FC = () => {
         currentProgress: 0,
         isCompleted: false,
         resetDate: getNextResetDate('daily'),
-        icon: <Clock className="h-5 w-5" />
+        iconName: 'Clock'
       },
       {
         id: 'weekly-sessions',
@@ -330,7 +354,7 @@ const Achievements: React.FC = () => {
         currentProgress: 0,
         isCompleted: false,
         resetDate: getNextResetDate('weekly'),
-        icon: <TrendingUp className="h-5 w-5" />
+        iconName: 'TrendingUp'
       },
       {
         id: 'monthly-tasks',
@@ -341,7 +365,7 @@ const Achievements: React.FC = () => {
         currentProgress: 0,
         isCompleted: false,
         resetDate: getNextResetDate('monthly'),
-        icon: <Trophy className="h-5 w-5" />
+        iconName: 'Trophy'
       }
     ];
 
@@ -649,7 +673,7 @@ const Achievements: React.FC = () => {
                 <CardContent className="p-4">
                   <div className="flex items-start space-x-4">
                     <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                      {goal.icon}
+                      {getIcon(goal.iconName)}
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-2">
@@ -729,7 +753,7 @@ const Achievements: React.FC = () => {
                     <CardContent className="p-4">
                       <div className="flex items-start space-x-4">
                         <div className={`p-3 rounded-lg ${getRarityColor(achievement.rarity)}`}>
-                          {achievement.icon}
+                          {getIcon(achievement.iconName)}
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center justify-between mb-2">
@@ -770,7 +794,7 @@ const Achievements: React.FC = () => {
                     <CardContent className="p-4">
                       <div className="flex items-start space-x-4">
                         <div className="p-3 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                          {achievement.icon}
+                          {getIcon(achievement.iconName)}
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center justify-between mb-2">
@@ -812,8 +836,5 @@ const Achievements: React.FC = () => {
     </div>
   );
 };
-
-// Add missing Play import
-import { Play } from 'lucide-react';
 
 export default Achievements;
