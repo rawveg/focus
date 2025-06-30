@@ -5,10 +5,9 @@ import TaskManager from "@/components/TaskManager";
 import Statistics from "@/components/Statistics";
 import Achievements from "@/components/Achievements";
 import Calendar from "@/components/Calendar";
-import TeamHub from "@/components/TeamHub";
 import ThemeToggle from "@/components/ThemeToggle";
 import DataExport from "@/components/DataExport";
-import { Timer, CheckSquare, BarChart3, Trophy, Calendar as CalendarIcon, Users } from 'lucide-react';
+import { Timer, CheckSquare, BarChart3, Trophy, Calendar as CalendarIcon } from 'lucide-react';
 import { showSuccess } from '@/utils/toast';
 
 interface Task {
@@ -125,7 +124,7 @@ const Index = () => {
         
         <div className="max-w-6xl mx-auto">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-6 mb-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white/20 dark:border-gray-700/20">
+            <TabsList className="grid w-full grid-cols-5 mb-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white/20 dark:border-gray-700/20">
               <TabsTrigger value="timer" className="flex items-center space-x-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700">
                 <Timer className="h-4 w-4" />
                 <span>Timer</span>
@@ -137,10 +136,6 @@ const Index = () => {
               <TabsTrigger value="calendar" className="flex items-center space-x-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700">
                 <CalendarIcon className="h-4 w-4" />
                 <span>Calendar</span>
-              </TabsTrigger>
-              <TabsTrigger value="team" className="flex items-center space-x-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700">
-                <Users className="h-4 w-4" />
-                <span>Team</span>
               </TabsTrigger>
               <TabsTrigger value="achievements" className="flex items-center space-x-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700">
                 <Trophy className="h-4 w-4" />
@@ -212,10 +207,6 @@ const Index = () => {
                 tasks={tasks}
                 onStartSession={handleStartScheduledSession}
               />
-            </TabsContent>
-
-            <TabsContent value="team">
-              <TeamHub />
             </TabsContent>
 
             <TabsContent value="achievements">
