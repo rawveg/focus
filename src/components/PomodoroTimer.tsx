@@ -2,14 +2,18 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Play, Pause, RotateCcw, Settings } from 'lucide-react';
+import { Play, Pause, RotateCcw, Settings, Volume2, VolumeX, SkipForward } from 'lucide-react';
 import { showSuccess, showError } from '@/utils/toast';
+import toast from 'react-hot-toast';
 
 interface PomodoroSettings {
   workDuration: number;
   shortBreakDuration: number;
   longBreakDuration: number;
   sessionsUntilLongBreak: number;
+  soundEnabled: boolean;
+  autoStartBreaks: boolean;
+  autoStartWork: boolean;
 }
 
 interface TimerState {
@@ -33,7 +37,10 @@ const PomodoroTimer = () => {
     workDuration: 25 * 60, // 25 minutes in seconds
     shortBreakDuration: 5 * 60, // 5 minutes in seconds
     longBreakDuration: 15 * 60, // 15 minutes in seconds
-    sessionsUntilLongBreak: 4
+    sessionsUntilLongBreak: 4,
+    soundEnabled: true,
+    autoStartBreaks: false,
+    autoStartWork: false
   });
 
   const [currentState, setCurrentState] = useState<SessionType>('work');
@@ -44,6 +51,37 @@ const PomodoroTimer = () => {
   const [isInitialized, setIsInitialized] = useState(false);
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+
+  // Create notification sound
+  const playNotificationSound = () => {
+    if (!settings.soundEnabled) return;
+    
+    try {
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+      
+      const ctx = audioContextRef.current;
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      
+      oscillator.frequency.setValueAtTime(800, ctx.currentTime);
+      oscillator.frequency.setValueAtTime(600, ctx.currentTime + 0.1);
+      oscillator.frequency.setValueAtTime(800, ctx.currentTime + 0.2);
+      
+      gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+      
+      oscillator.start(ctx.currentTime);
+      oscillator.stop(ctx.currentTime + 0.3);
+    } catch (error) {
+      console.log('Could not play notification sound:', error);
+    }
+  };
 
   // Get current session duration based on state
   const getCurrentDurationForState = (state: SessionType, currentSettings: PomodoroSettings) => {
@@ -96,7 +134,7 @@ const PomodoroTimer = () => {
             setTimeLeft(newTimeLeft);
             setIsRunning(true);
             setCompletedSessions(parsedState.completedSessions);
-            console.log('Restored running timer with', newTimeLeft, 'seconds left');
+            toast.success('Timer resumed from where you left off!');
           } else {
             // Timer should have finished, calculate how many sessions completed
             const sessionDuration = getCurrentDurationForState(parsedState.currentState, loadedSettings);
@@ -111,7 +149,6 @@ const PomodoroTimer = () => {
           setTimeLeft(parsedState.timeLeft);
           setIsRunning(parsedState.isRunning);
           setCompletedSessions(parsedState.completedSessions);
-          console.log('Restored paused timer state');
         }
       } catch (error) {
         console.error('Failed to parse saved timer state:', error);
@@ -125,6 +162,7 @@ const PomodoroTimer = () => {
     let remainingTime = totalElapsedTime;
     let currentSessionType = lastState.currentState;
     let sessions = lastState.completedSessions;
+    let completedWhileAway = 0;
     
     while (remainingTime > 0) {
       const sessionDuration = getCurrentDurationForState(currentSessionType, currentSettings);
@@ -132,6 +170,7 @@ const PomodoroTimer = () => {
       if (remainingTime >= sessionDuration) {
         // Complete this session
         remainingTime -= sessionDuration;
+        completedWhileAway++;
         
         if (currentSessionType === 'work') {
           sessions++;
@@ -151,7 +190,10 @@ const PomodoroTimer = () => {
         setTimeLeft(newTimeLeft);
         setCompletedSessions(sessions);
         setIsRunning(true);
-        console.log('Restored to partial session with', newTimeLeft, 'seconds left');
+        
+        if (completedWhileAway > 0) {
+          toast.success(`${completedWhileAway} session(s) completed while you were away!`);
+        }
         return;
       }
     }
@@ -161,7 +203,10 @@ const PomodoroTimer = () => {
     setTimeLeft(getCurrentDurationForState(currentSessionType, currentSettings));
     setCompletedSessions(sessions);
     setIsRunning(false);
-    console.log('Multiple sessions completed, now at start of new session');
+    
+    if (completedWhileAway > 0) {
+      toast.success(`${completedWhileAway} session(s) completed while you were away!`);
+    }
   };
 
   // Save settings to localStorage whenever they change
@@ -183,7 +228,6 @@ const PomodoroTimer = () => {
         sessionStartTime: Date.now()
       };
       localStorage.setItem(STORAGE_KEYS.TIMER_STATE, JSON.stringify(timerState));
-      console.log('Saved timer state:', timerState);
     }
   }, [currentState, timeLeft, isRunning, completedSessions, isInitialized]);
 
@@ -211,8 +255,16 @@ const PomodoroTimer = () => {
     setTimeLeft(getCurrentDuration());
   };
 
+  // Skip to next session
+  const skipSession = () => {
+    setIsRunning(false);
+    nextSession();
+  };
+
   // Move to next session
   const nextSession = () => {
+    playNotificationSound();
+    
     if (currentState === 'work') {
       const newCompletedSessions = completedSessions + 1;
       setCompletedSessions(newCompletedSessions);
@@ -220,18 +272,30 @@ const PomodoroTimer = () => {
       if (newCompletedSessions % settings.sessionsUntilLongBreak === 0) {
         setCurrentState('longBreak');
         setTimeLeft(settings.longBreakDuration);
-        showSuccess('Great work! Time for a long break!');
+        toast.success('🎉 Great work! Time for a long break!');
+        if (settings.autoStartBreaks) {
+          setIsRunning(true);
+        }
       } else {
         setCurrentState('shortBreak');
         setTimeLeft(settings.shortBreakDuration);
-        showSuccess('Work session complete! Take a short break.');
+        toast.success('✅ Work session complete! Take a short break.');
+        if (settings.autoStartBreaks) {
+          setIsRunning(true);
+        }
       }
     } else {
       setCurrentState('work');
       setTimeLeft(settings.workDuration);
-      showSuccess('Break over! Ready to focus?');
+      toast.success('💪 Break over! Ready to focus?');
+      if (settings.autoStartWork) {
+        setIsRunning(true);
+      }
     }
-    setIsRunning(false);
+    
+    if (!settings.autoStartBreaks && !settings.autoStartWork) {
+      setIsRunning(false);
+    }
   };
 
   // Timer countdown effect
@@ -240,7 +304,6 @@ const PomodoroTimer = () => {
       intervalRef.current = setInterval(() => {
         setTimeLeft(prev => {
           if (prev <= 1) {
-            setIsRunning(false);
             nextSession();
             return 0;
           }
@@ -266,6 +329,19 @@ const PomodoroTimer = () => {
       setTimeLeft(getCurrentDuration());
     }
   }, [settings, currentState]);
+
+  // Update document title with timer
+  useEffect(() => {
+    if (isInitialized) {
+      const stateEmoji = currentState === 'work' ? '🍅' : currentState === 'shortBreak' ? '☕' : '🌴';
+      const statusEmoji = isRunning ? '▶️' : '⏸️';
+      document.title = `${statusEmoji} ${formatTime(timeLeft)} ${stateEmoji} Focus Timer`;
+    }
+    
+    return () => {
+      document.title = 'Focus Timer';
+    };
+  }, [timeLeft, isRunning, currentState, isInitialized]);
 
   const getStateLabel = () => {
     switch (currentState) {
@@ -293,16 +369,16 @@ const PomodoroTimer = () => {
     }
   };
 
-  const getProgressColor = () => {
+  const getStateEmoji = () => {
     switch (currentState) {
       case 'work':
-        return 'bg-blue-500';
+        return '🍅';
       case 'shortBreak':
-        return 'bg-green-500';
+        return '☕';
       case 'longBreak':
-        return 'bg-purple-500';
+        return '🌴';
       default:
-        return 'bg-blue-500';
+        return '🍅';
     }
   };
 
@@ -327,16 +403,31 @@ const PomodoroTimer = () => {
         <div className="px-8 pt-8 pb-4">
           <div className="flex items-center justify-between mb-2">
             <h1 className="text-lg font-semibold text-gray-900 tracking-tight">Timer</h1>
-            <button
-              onClick={() => setShowSettings(!showSettings)}
-              className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-200 flex items-center justify-center"
-            >
-              <Settings className="h-4 w-4 text-gray-600" />
-            </button>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setSettings(prev => ({ ...prev, soundEnabled: !prev.soundEnabled }))}
+                className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-200 flex items-center justify-center"
+              >
+                {settings.soundEnabled ? (
+                  <Volume2 className="h-4 w-4 text-gray-600" />
+                ) : (
+                  <VolumeX className="h-4 w-4 text-gray-600" />
+                )}
+              </button>
+              <button
+                onClick={() => setShowSettings(!showSettings)}
+                className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-200 flex items-center justify-center"
+              >
+                <Settings className="h-4 w-4 text-gray-600" />
+              </button>
+            </div>
           </div>
-          <p className={`text-sm font-medium ${getStateColor()} tracking-wide uppercase`}>
-            {getStateLabel()}
-          </p>
+          <div className="flex items-center space-x-2">
+            <span className="text-2xl">{getStateEmoji()}</span>
+            <p className={`text-sm font-medium ${getStateColor()} tracking-wide uppercase`}>
+              {getStateLabel()}
+            </p>
+          </div>
         </div>
 
         {/* Timer Display */}
@@ -381,7 +472,7 @@ const PomodoroTimer = () => {
           </div>
 
           {/* Control Buttons */}
-          <div className="flex justify-center space-x-4 mb-6">
+          <div className="flex justify-center space-x-3 mb-6">
             <button
               onClick={toggleTimer}
               className={`w-16 h-16 rounded-full flex items-center justify-center transition-all duration-200 shadow-lg ${
@@ -406,6 +497,13 @@ const PomodoroTimer = () => {
               className="w-16 h-16 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center justify-center transition-all duration-200 shadow-lg"
             >
               <RotateCcw className="h-5 w-5" />
+            </button>
+
+            <button
+              onClick={skipSession}
+              className="w-16 h-16 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center justify-center transition-all duration-200 shadow-lg"
+            >
+              <SkipForward className="h-5 w-5" />
             </button>
           </div>
 
@@ -555,6 +653,62 @@ const PomodoroTimer = () => {
                   }))}
                   className="w-full px-4 py-3 bg-gray-50 border-0 rounded-2xl text-gray-900 placeholder-gray-500 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-200"
                 />
+              </div>
+
+              <div className="space-y-4 pt-4 border-t border-gray-200">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium text-gray-700">
+                    Sound Notifications
+                  </label>
+                  <button
+                    onClick={() => setSettings(prev => ({ ...prev, soundEnabled: !prev.soundEnabled }))}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      settings.soundEnabled ? 'bg-blue-500' : 'bg-gray-300'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        settings.soundEnabled ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium text-gray-700">
+                    Auto-start Breaks
+                  </label>
+                  <button
+                    onClick={() => setSettings(prev => ({ ...prev, autoStartBreaks: !prev.autoStartBreaks }))}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      settings.autoStartBreaks ? 'bg-green-500' : 'bg-gray-300'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        settings.autoStartBreaks ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium text-gray-700">
+                    Auto-start Work
+                  </label>
+                  <button
+                    onClick={() => setSettings(prev => ({ ...prev, autoStartWork: !prev.autoStartWork }))}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      settings.autoStartWork ? 'bg-blue-500' : 'bg-gray-300'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        settings.autoStartWork ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
