@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PomodoroTimer from "@/components/PomodoroTimer";
 import TaskManager from "@/components/TaskManager";
 import Statistics from "@/components/Statistics";
 import Achievements from "@/components/Achievements";
+import Calendar from "@/components/Calendar";
 import ThemeToggle from "@/components/ThemeToggle";
 import DataExport from "@/components/DataExport";
-import { Timer, CheckSquare, BarChart3, Trophy } from 'lucide-react';
+import { Timer, CheckSquare, BarChart3, Trophy, Calendar as CalendarIcon } from 'lucide-react';
+import { showSuccess } from '@/utils/toast';
 
 interface Task {
   id: string;
@@ -19,12 +21,87 @@ interface Task {
   completedAt?: number;
 }
 
+interface ScheduledSession {
+  id: string;
+  title: string;
+  description?: string;
+  date: string;
+  startTime: string;
+  duration: number;
+  type: 'work' | 'break' | 'longBreak';
+  taskId?: string;
+  isCompleted: boolean;
+  completedAt?: number;
+  createdAt: number;
+}
+
 const Index = () => {
   const [currentTask, setCurrentTask] = useState<Task | null>(null);
   const [completedSessions, setCompletedSessions] = useState(0);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [activeTab, setActiveTab] = useState('timer');
+
+  // Load tasks from localStorage
+  useEffect(() => {
+    const savedTasks = localStorage.getItem('pomodoro-tasks');
+    if (savedTasks) {
+      try {
+        setTasks(JSON.parse(savedTasks));
+      } catch (error) {
+        console.error('Failed to load tasks:', error);
+      }
+    }
+  }, []);
+
+  // Update tasks when they change
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const savedTasks = localStorage.getItem('pomodoro-tasks');
+      if (savedTasks) {
+        try {
+          setTasks(JSON.parse(savedTasks));
+        } catch (error) {
+          console.error('Failed to load tasks:', error);
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Also listen for custom events when tasks are updated
+    const handleTaskUpdate = () => {
+      handleStorageChange();
+    };
+
+    window.addEventListener('tasksUpdated', handleTaskUpdate);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('tasksUpdated', handleTaskUpdate);
+    };
+  }, []);
 
   const handleTaskComplete = () => {
     setCompletedSessions(prev => prev + 1);
+  };
+
+  const handleStartScheduledSession = (session: ScheduledSession) => {
+    // If session is linked to a task, set it as current task
+    if (session.taskId) {
+      const task = tasks.find(t => t.id === session.taskId);
+      if (task) {
+        setCurrentTask(task);
+      }
+    }
+
+    // Switch to timer tab
+    setActiveTab('timer');
+    
+    // Show success message
+    showSuccess(`Starting scheduled session: ${session.title}`);
+    
+    // You could also automatically start the timer here if desired
+    // by passing additional props to PomodoroTimer
   };
 
   return (
@@ -45,9 +122,9 @@ const Index = () => {
           </p>
         </div>
         
-        <div className="max-w-4xl mx-auto">
-          <Tabs defaultValue="timer" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white/20 dark:border-gray-700/20">
+        <div className="max-w-6xl mx-auto">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-5 mb-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white/20 dark:border-gray-700/20">
               <TabsTrigger value="timer" className="flex items-center space-x-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700">
                 <Timer className="h-4 w-4" />
                 <span>Timer</span>
@@ -55,6 +132,10 @@ const Index = () => {
               <TabsTrigger value="tasks" className="flex items-center space-x-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700">
                 <CheckSquare className="h-4 w-4" />
                 <span>Tasks</span>
+              </TabsTrigger>
+              <TabsTrigger value="calendar" className="flex items-center space-x-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700">
+                <CalendarIcon className="h-4 w-4" />
+                <span>Calendar</span>
               </TabsTrigger>
               <TabsTrigger value="achievements" className="flex items-center space-x-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700">
                 <Trophy className="h-4 w-4" />
@@ -118,6 +199,13 @@ const Index = () => {
                 currentTask={currentTask}
                 onTaskSelect={setCurrentTask}
                 onTaskComplete={handleTaskComplete}
+              />
+            </TabsContent>
+
+            <TabsContent value="calendar">
+              <Calendar 
+                tasks={tasks}
+                onStartSession={handleStartScheduledSession}
               />
             </TabsContent>
 
