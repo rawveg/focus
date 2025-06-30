@@ -236,6 +236,35 @@ const Index = () => {
             </TabsContent>
           </Tabs>
         </div>
+
+        {/* Footer */}
+        <footer className="mt-20 pt-8 border-t border-gray-200 dark:border-gray-700">
+          <div className="text-center space-y-2">
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              Licensed under the{' '}
+              <a
+                href="https://www.gnu.org/licenses/agpl-3.0.html"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 underline"
+              >
+                GNU Affero General Public License v3.0
+              </a>
+              {' '}•{' '}
+              <a
+                href="https://github.com/rawveg/focus/blob/main/LICENSE"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 underline"
+              >
+                View License
+              </a>
+            </div>
+            <div className="text-sm text-gray-500 dark:text-gray-500">
+              © {new Date().getFullYear()} Tim Green. All rights reserved.
+            </div>
+          </div>
+        </footer>
       </div>
     </div>
   );
