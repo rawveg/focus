@@ -5,10 +5,9 @@ import TaskManager from "@/components/TaskManager";
 import Statistics from "@/components/Statistics";
 import Achievements from "@/components/Achievements";
 import Calendar from "@/components/Calendar";
-import DistractionBlocker from "@/components/DistractionBlocker";
 import ThemeToggle from "@/components/ThemeToggle";
 import DataExport from "@/components/DataExport";
-import { Timer, CheckSquare, BarChart3, Trophy, Calendar as CalendarIcon, Shield } from 'lucide-react';
+import { Timer, CheckSquare, BarChart3, Trophy, Calendar as CalendarIcon } from 'lucide-react';
 import { showSuccess } from '@/utils/toast';
 
 interface Task {
@@ -41,9 +40,6 @@ const Index = () => {
   const [completedSessions, setCompletedSessions] = useState(0);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [activeTab, setActiveTab] = useState('timer');
-  const [isTimerRunning, setIsTimerRunning] = useState(false);
-  const [currentSessionType, setCurrentSessionType] = useState<'work' | 'shortBreak' | 'longBreak'>('work');
-  const [focusModeActive, setFocusModeActive] = useState(false);
 
   // Load tasks from localStorage
   useEffect(() => {
@@ -108,30 +104,13 @@ const Index = () => {
     // by passing additional props to PomodoroTimer
   };
 
-  const handleTimerStateChange = (running: boolean, sessionType: 'work' | 'shortBreak' | 'longBreak') => {
-    setIsTimerRunning(running);
-    setCurrentSessionType(sessionType);
-  };
-
-  const handleFocusModeChange = (enabled: boolean) => {
-    setFocusModeActive(enabled);
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-blue-900 dark:to-indigo-900 py-8 px-4 transition-colors duration-300">
       <div className="container mx-auto max-w-6xl">
         {/* Header with theme toggle and data export */}
         <div className="flex justify-between items-center mb-8">
           <DataExport />
-          <div className="flex items-center space-x-4">
-            {focusModeActive && (
-              <div className="flex items-center space-x-2 px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-sm">
-                <Shield className="h-4 w-4" />
-                <span>Focus Mode Active</span>
-              </div>
-            )}
-            <ThemeToggle />
-          </div>
+          <ThemeToggle />
         </div>
 
         <div className="text-center mb-12">
@@ -145,7 +124,7 @@ const Index = () => {
         
         <div className="max-w-6xl mx-auto">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-6 mb-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white/20 dark:border-gray-700/20">
+            <TabsList className="grid w-full grid-cols-5 mb-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white/20 dark:border-gray-700/20">
               <TabsTrigger value="timer" className="flex items-center space-x-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700">
                 <Timer className="h-4 w-4" />
                 <span>Timer</span>
@@ -157,10 +136,6 @@ const Index = () => {
               <TabsTrigger value="calendar" className="flex items-center space-x-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700">
                 <CalendarIcon className="h-4 w-4" />
                 <span>Calendar</span>
-              </TabsTrigger>
-              <TabsTrigger value="focus" className="flex items-center space-x-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700">
-                <Shield className="h-4 w-4" />
-                <span>Focus</span>
               </TabsTrigger>
               <TabsTrigger value="achievements" className="flex items-center space-x-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700">
                 <Trophy className="h-4 w-4" />
@@ -177,7 +152,6 @@ const Index = () => {
                 <PomodoroTimer 
                   currentTask={currentTask}
                   onTaskComplete={handleTaskComplete}
-                  onTimerStateChange={handleTimerStateChange}
                 />
               </div>
               
@@ -232,14 +206,6 @@ const Index = () => {
               <Calendar 
                 tasks={tasks}
                 onStartSession={handleStartScheduledSession}
-              />
-            </TabsContent>
-
-            <TabsContent value="focus">
-              <DistractionBlocker
-                isTimerRunning={isTimerRunning}
-                currentSessionType={currentSessionType}
-                onFocusModeChange={handleFocusModeChange}
               />
             </TabsContent>
 

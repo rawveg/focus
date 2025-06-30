@@ -56,13 +56,11 @@ const STORAGE_KEYS = {
 interface PomodoroTimerProps {
   currentTask?: Task | null;
   onTaskComplete?: () => void;
-  onTimerStateChange?: (isRunning: boolean, sessionType: SessionType) => void;
 }
 
 const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ 
   currentTask, 
-  onTaskComplete,
-  onTimerStateChange
+  onTaskComplete 
 }) => {
   const [settings, setSettings] = useState<PomodoroSettings>({
     workDuration: 25 * 60, // 25 minutes in seconds
@@ -83,13 +81,6 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
-
-  // Notify parent component of timer state changes
-  useEffect(() => {
-    if (onTimerStateChange && isInitialized) {
-      onTimerStateChange(isRunning, currentState);
-    }
-  }, [isRunning, currentState, onTimerStateChange, isInitialized]);
 
   // Save session to history
   const saveSession = (type: SessionType, duration: number) => {
