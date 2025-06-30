@@ -6,6 +6,17 @@ import { Play, Pause, RotateCcw, Settings, Volume2, VolumeX, SkipForward } from 
 import { showSuccess, showError } from '@/utils/toast';
 import toast from 'react-hot-toast';
 
+interface Task {
+  id: string;
+  title: string;
+  description?: string;
+  estimatedPomodoros: number;
+  completedPomodoros: number;
+  isCompleted: boolean;
+  createdAt: number;
+  completedAt?: number;
+}
+
 interface PomodoroSettings {
   workDuration: number;
   shortBreakDuration: number;
@@ -25,14 +36,32 @@ interface TimerState {
   sessionStartTime: number;
 }
 
+interface SessionRecord {
+  date: string;
+  type: 'work' | 'shortBreak' | 'longBreak';
+  duration: number;
+  completedAt: number;
+  taskId?: string;
+  taskTitle?: string;
+}
+
 type SessionType = 'work' | 'shortBreak' | 'longBreak';
 
 const STORAGE_KEYS = {
   SETTINGS: 'pomodoro-settings',
-  TIMER_STATE: 'pomodoro-timer-state'
+  TIMER_STATE: 'pomodoro-timer-state',
+  SESSIONS: 'pomodoro-sessions'
 };
 
-const PomodoroTimer = () => {
+interface PomodoroTimerProps {
+  currentTask?: Task | null;
+  onTaskComplete?: () => void;
+}
+
+const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ 
+  currentTask, 
+  onTaskComplete 
+}) => {
   const [settings, setSettings] = useState<PomodoroSettings>({
     workDuration: 25 * 60, // 25 minutes in seconds
     shortBreakDuration: 5 * 60, // 5 minutes in seconds
@@ -52,6 +81,32 @@ const PomodoroTimer = () => {
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
+
+  // Save session to history
+  const saveSession = (type: SessionType, duration: number) => {
+    const session: SessionRecord = {
+      date: new Date().toDateString(),
+      type,
+      duration,
+      completedAt: Date.now(),
+      taskId: currentTask?.id,
+      taskTitle: currentTask?.title
+    };
+
+    const savedSessions = localStorage.getItem(STORAGE_KEYS.SESSIONS);
+    let sessions: SessionRecord[] = [];
+    
+    if (savedSessions) {
+      try {
+        sessions = JSON.parse(savedSessions);
+      } catch (error) {
+        console.error('Failed to parse saved sessions:', error);
+      }
+    }
+
+    sessions.push(session);
+    localStorage.setItem(STORAGE_KEYS.SESSIONS, JSON.stringify(sessions));
+  };
 
   // Create notification sound
   const playNotificationSound = () => {
@@ -172,8 +227,12 @@ const PomodoroTimer = () => {
         remainingTime -= sessionDuration;
         completedWhileAway++;
         
+        // Save the completed session
+        saveSession(currentSessionType, sessionDuration);
+        
         if (currentSessionType === 'work') {
           sessions++;
+          if (onTaskComplete) onTaskComplete();
           // Determine next session type
           if (sessions % currentSettings.sessionsUntilLongBreak === 0) {
             currentSessionType = 'longBreak';
@@ -265,9 +324,16 @@ const PomodoroTimer = () => {
   const nextSession = () => {
     playNotificationSound();
     
+    // Save completed session
+    const sessionDuration = getCurrentDuration();
+    saveSession(currentState, sessionDuration - timeLeft);
+    
     if (currentState === 'work') {
       const newCompletedSessions = completedSessions + 1;
       setCompletedSessions(newCompletedSessions);
+      
+      // Notify parent component about task completion
+      if (onTaskComplete) onTaskComplete();
       
       if (newCompletedSessions % settings.sessionsUntilLongBreak === 0) {
         setCurrentState('longBreak');
@@ -335,13 +401,14 @@ const PomodoroTimer = () => {
     if (isInitialized) {
       const stateEmoji = currentState === 'work' ? '🍅' : currentState === 'shortBreak' ? '☕' : '🌴';
       const statusEmoji = isRunning ? '▶️' : '⏸️';
-      document.title = `${statusEmoji} ${formatTime(timeLeft)} ${stateEmoji} Focus Timer`;
+      const taskInfo = currentTask ? ` - ${currentTask.title}` : '';
+      document.title = `${statusEmoji} ${formatTime(timeLeft)} ${stateEmoji}${taskInfo} Focus Timer`;
     }
     
     return () => {
       document.title = 'Focus Timer';
     };
-  }, [timeLeft, isRunning, currentState, isInitialized]);
+  }, [timeLeft, isRunning, currentState, currentTask, isInitialized]);
 
   const getStateLabel = () => {
     switch (currentState) {
@@ -397,6 +464,19 @@ const PomodoroTimer = () => {
 
   return (
     <div className="max-w-sm mx-auto">
+      {/* Current Task Display */}
+      {currentTask && (
+        <div className="mb-6 p-4 bg-blue-50/80 backdrop-blur-xl rounded-2xl border border-blue-200/50">
+          <div className="text-center">
+            <div className="text-sm font-medium text-blue-700 mb-1">Working on</div>
+            <div className="font-semibold text-blue-900">{currentTask.title}</div>
+            <div className="text-xs text-blue-600 mt-1">
+              {currentTask.completedPomodoros}/{currentTask.estimatedPomodoros} pomodoros
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main Timer Card */}
       <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl border border-white/20 overflow-hidden">
         {/* Header */}
