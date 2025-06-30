@@ -3,9 +3,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PomodoroTimer from "@/components/PomodoroTimer";
 import TaskManager from "@/components/TaskManager";
 import Statistics from "@/components/Statistics";
+import Achievements from "@/components/Achievements";
 import ThemeToggle from "@/components/ThemeToggle";
 import DataExport from "@/components/DataExport";
-import { Timer, CheckSquare, BarChart3 } from 'lucide-react';
+import { Timer, CheckSquare, BarChart3, Trophy } from 'lucide-react';
 
 interface Task {
   id: string;
@@ -46,7 +47,7 @@ const Index = () => {
         
         <div className="max-w-4xl mx-auto">
           <Tabs defaultValue="timer" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white/20 dark:border-gray-700/20">
+            <TabsList className="grid w-full grid-cols-4 mb-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white/20 dark:border-gray-700/20">
               <TabsTrigger value="timer" className="flex items-center space-x-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700">
                 <Timer className="h-4 w-4" />
                 <span>Timer</span>
@@ -54,6 +55,10 @@ const Index = () => {
               <TabsTrigger value="tasks" className="flex items-center space-x-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700">
                 <CheckSquare className="h-4 w-4" />
                 <span>Tasks</span>
+              </TabsTrigger>
+              <TabsTrigger value="achievements" className="flex items-center space-x-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700">
+                <Trophy className="h-4 w-4" />
+                <span>Goals</span>
               </TabsTrigger>
               <TabsTrigger value="stats" className="flex items-center space-x-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700">
                 <BarChart3 className="h-4 w-4" />
@@ -114,6 +119,10 @@ const Index = () => {
                 onTaskSelect={setCurrentTask}
                 onTaskComplete={handleTaskComplete}
               />
+            </TabsContent>
+
+            <TabsContent value="achievements">
+              <Achievements />
             </TabsContent>
 
             <TabsContent value="stats">
