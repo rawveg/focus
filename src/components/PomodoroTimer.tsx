@@ -12,7 +12,21 @@ interface PomodoroSettings {
   sessionsUntilLongBreak: number;
 }
 
-type TimerState = 'work' | 'shortBreak' | 'longBreak';
+interface TimerState {
+  currentState: 'work' | 'shortBreak' | 'longBreak';
+  timeLeft: number;
+  isRunning: boolean;
+  completedSessions: number;
+  lastUpdateTime: number;
+  sessionStartTime: number;
+}
+
+type SessionType = 'work' | 'shortBreak' | 'longBreak';
+
+const STORAGE_KEYS = {
+  SETTINGS: 'pomodoro-settings',
+  TIMER_STATE: 'pomodoro-timer-state'
+};
 
 const PomodoroTimer = () => {
   const [settings, setSettings] = useState<PomodoroSettings>({
@@ -22,7 +36,7 @@ const PomodoroTimer = () => {
     sessionsUntilLongBreak: 4
   });
 
-  const [currentState, setCurrentState] = useState<TimerState>('work');
+  const [currentState, setCurrentState] = useState<SessionType>('work');
   const [timeLeft, setTimeLeft] = useState(settings.workDuration);
   const [isRunning, setIsRunning] = useState(false);
   const [completedSessions, setCompletedSessions] = useState(0);
@@ -30,9 +44,79 @@ const PomodoroTimer = () => {
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Get current session duration based on state
-  const getCurrentDuration = () => {
-    switch (currentState) {
+  // Load settings from localStorage
+  useEffect(() => {
+    const savedSettings = localStorage.getItem(STORAGE_KEYS.SETTINGS);
+    if (savedSettings) {
+      try {
+        const parsedSettings = JSON.parse(savedSettings);
+        setSettings(parsedSettings);
+      } catch (error) {
+        console.error('Failed to parse saved settings:', error);
+      }
+    }
+  }, []);
+
+  // Load timer state from localStorage and calculate current position
+  useEffect(() => {
+    const savedTimerState = localStorage.getItem(STORAGE_KEYS.TIMER_STATE);
+    if (savedTimerState) {
+      try {
+        const parsedState: TimerState = JSON.parse(savedTimerState);
+        const now = Date.now();
+        const timeSinceLastUpdate = Math.floor((now - parsedState.lastUpdateTime) / 1000);
+
+        if (parsedState.isRunning && timeSinceLastUpdate > 0) {
+          // Calculate how much time should have passed
+          const newTimeLeft = Math.max(0, parsedState.timeLeft - timeSinceLastUpdate);
+          
+          if (newTimeLeft > 0) {
+            // Timer is still running
+            setCurrentState(parsedState.currentState);
+            setTimeLeft(newTimeLeft);
+            setIsRunning(true);
+            setCompletedSessions(parsedState.completedSessions);
+          } else {
+            // Timer should have finished, calculate how many sessions completed
+            const sessionDuration = getCurrentDurationForState(parsedState.currentState);
+            const totalElapsed = timeSinceLastUpdate + (sessionDuration - parsedState.timeLeft);
+            
+            // Simulate the sessions that would have completed
+            simulateCompletedSessions(parsedState, totalElapsed);
+          }
+        } else {
+          // Timer was paused, restore exact state
+          setCurrentState(parsedState.currentState);
+          setTimeLeft(parsedState.timeLeft);
+          setIsRunning(false);
+          setCompletedSessions(parsedState.completedSessions);
+        }
+      } catch (error) {
+        console.error('Failed to parse saved timer state:', error);
+      }
+    }
+  }, [settings]);
+
+  // Save settings to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
+  }, [settings]);
+
+  // Save timer state to localStorage whenever it changes
+  useEffect(() => {
+    const timerState: TimerState = {
+      currentState,
+      timeLeft,
+      isRunning,
+      completedSessions,
+      lastUpdateTime: Date.now(),
+      sessionStartTime: Date.now()
+    };
+    localStorage.setItem(STORAGE_KEYS.TIMER_STATE, JSON.stringify(timerState));
+  }, [currentState, timeLeft, isRunning, completedSessions]);
+
+  const getCurrentDurationForState = (state: SessionType) => {
+    switch (state) {
       case 'work':
         return settings.workDuration;
       case 'shortBreak':
@@ -42,6 +126,51 @@ const PomodoroTimer = () => {
       default:
         return settings.workDuration;
     }
+  };
+
+  const getCurrentDuration = () => {
+    return getCurrentDurationForState(currentState);
+  };
+
+  const simulateCompletedSessions = (lastState: TimerState, totalElapsedTime: number) => {
+    let remainingTime = totalElapsedTime;
+    let currentSessionType = lastState.currentState;
+    let sessions = lastState.completedSessions;
+    
+    while (remainingTime > 0) {
+      const sessionDuration = getCurrentDurationForState(currentSessionType);
+      
+      if (remainingTime >= sessionDuration) {
+        // Complete this session
+        remainingTime -= sessionDuration;
+        
+        if (currentSessionType === 'work') {
+          sessions++;
+          // Determine next session type
+          if (sessions % settings.sessionsUntilLongBreak === 0) {
+            currentSessionType = 'longBreak';
+          } else {
+            currentSessionType = 'shortBreak';
+          }
+        } else {
+          currentSessionType = 'work';
+        }
+      } else {
+        // Partial session
+        const newTimeLeft = sessionDuration - remainingTime;
+        setCurrentState(currentSessionType);
+        setTimeLeft(newTimeLeft);
+        setCompletedSessions(sessions);
+        setIsRunning(true);
+        return;
+      }
+    }
+    
+    // If we get here, we're at the start of a new session
+    setCurrentState(currentSessionType);
+    setTimeLeft(getCurrentDurationForState(currentSessionType));
+    setCompletedSessions(sessions);
+    setIsRunning(false);
   };
 
   // Format time as MM:SS
