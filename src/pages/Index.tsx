@@ -1,4 +1,3 @@
-import { MadeWithDyad } from "@/components/made-with-dyad";
 import PomodoroTimer from "@/components/PomodoroTimer";
 
 const Index = () => {
@@ -36,8 +35,6 @@ const Index = () => {
           </div>
         </div>
       </div>
-      
-      <MadeWithDyad />
     </div>
   );
 };
