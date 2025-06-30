@@ -225,7 +225,6 @@ This project is licensed under the **GNU Affero General Public License v3.0** - 
 
 ## 📞 Support
 
-- 📧 **Email**: [tim@timgreen.ws](mailto:tim@timgreen.ws)
 - 🐛 **Issues**: [GitHub Issues](https://github.com/rawveg/focus/issues)
 - 💬 **Discussions**: [GitHub Discussions](https://github.com/rawveg/focus/discussions)
 
