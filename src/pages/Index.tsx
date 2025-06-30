@@ -7,7 +7,8 @@ import Achievements from "@/components/Achievements";
 import Calendar from "@/components/Calendar";
 import ThemeToggle from "@/components/ThemeToggle";
 import DataExport from "@/components/DataExport";
-import { Timer, CheckSquare, BarChart3, Trophy, Calendar as CalendarIcon } from 'lucide-react';
+import { Timer, CheckSquare, BarChart3, Trophy, Calendar as CalendarIcon, Github } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { showSuccess } from '@/utils/toast';
 
 interface Task {
@@ -107,10 +108,27 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-blue-900 dark:to-indigo-900 py-8 px-4 transition-colors duration-300">
       <div className="container mx-auto max-w-6xl">
-        {/* Header with theme toggle and data export */}
+        {/* Header with data export, github link, and theme toggle */}
         <div className="flex justify-between items-center mb-8">
           <DataExport />
-          <ThemeToggle />
+          <div className="flex items-center space-x-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              asChild
+              className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors duration-200"
+            >
+              <a
+                href="https://github.com/rawveg/focus"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="View source on GitHub"
+              >
+                <Github className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+              </a>
+            </Button>
+            <ThemeToggle />
+          </div>
         </div>
 
         <div className="text-center mb-12">
