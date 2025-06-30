@@ -4,6 +4,7 @@ import PomodoroTimer from "@/components/PomodoroTimer";
 import TaskManager from "@/components/TaskManager";
 import Statistics from "@/components/Statistics";
 import ThemeToggle from "@/components/ThemeToggle";
+import DataExport from "@/components/DataExport";
 import { Timer, CheckSquare, BarChart3 } from 'lucide-react';
 
 interface Task {
@@ -28,8 +29,9 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-blue-900 dark:to-indigo-900 py-8 px-4 transition-colors duration-300">
       <div className="container mx-auto max-w-6xl">
-        {/* Header with theme toggle */}
-        <div className="flex justify-end mb-8">
+        {/* Header with theme toggle and data export */}
+        <div className="flex justify-between items-center mb-8">
+          <DataExport />
           <ThemeToggle />
         </div>
 

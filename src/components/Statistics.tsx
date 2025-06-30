@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, Clock, Target, TrendingUp, Award, Flame } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Calendar, Clock, Target, TrendingUp, Award, Flame, Download } from 'lucide-react';
 
 interface SessionRecord {
   date: string;
@@ -70,6 +71,37 @@ const Statistics: React.FC<StatisticsProps> = ({ completedSessions }) => {
     }
   }, [sessions]);
 
+  // Export statistics as CSV
+  const exportStatistics = () => {
+    try {
+      const csvHeaders = ['Date', 'Type', 'Duration (minutes)', 'Task', 'Completed At'];
+      const csvRows = sessions.map(session => [
+        new Date(session.completedAt).toLocaleDateString(),
+        session.type,
+        Math.round(session.duration / 60),
+        session.taskTitle || 'No task',
+        new Date(session.completedAt).toLocaleString()
+      ]);
+
+      const csvContent = [
+        csvHeaders.join(','),
+        ...csvRows.map(row => row.map(cell => `"${cell}"`).join(','))
+      ].join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `pomodoro-statistics-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to export statistics:', error);
+    }
+  };
+
   // Get today's stats
   const today = new Date().toDateString();
   const todaySessions = sessions.filter(s => 
@@ -137,10 +169,10 @@ const Statistics: React.FC<StatisticsProps> = ({ completedSessions }) => {
             <div className="flex items-center justify-center mb-2">
               <Clock className="h-5 w-5 text-blue-500" />
             </div>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">
               {todayWorkSessions.length}
             </div>
-            <div className="text-sm text-gray-600">Today's Sessions</div>
+            <div className="text-sm text-gray-600 dark:text-gray-300">Today's Sessions</div>
           </CardContent>
         </Card>
 
@@ -149,10 +181,10 @@ const Statistics: React.FC<StatisticsProps> = ({ completedSessions }) => {
             <div className="flex items-center justify-center mb-2">
               <Target className="h-5 w-5 text-green-500" />
             </div>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">
               {formatTime(todayFocusTime)}
             </div>
-            <div className="text-sm text-gray-600">Focus Time</div>
+            <div className="text-sm text-gray-600 dark:text-gray-300">Focus Time</div>
           </CardContent>
         </Card>
 
@@ -161,10 +193,10 @@ const Statistics: React.FC<StatisticsProps> = ({ completedSessions }) => {
             <div className="flex items-center justify-center mb-2">
               <Flame className="h-5 w-5 text-orange-500" />
             </div>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">
               {streak}
             </div>
-            <div className="text-sm text-gray-600">Day Streak</div>
+            <div className="text-sm text-gray-600 dark:text-gray-300">Day Streak</div>
           </CardContent>
         </Card>
 
@@ -173,12 +205,24 @@ const Statistics: React.FC<StatisticsProps> = ({ completedSessions }) => {
             <div className="flex items-center justify-center mb-2">
               <Award className="h-5 w-5 text-purple-500" />
             </div>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">
               {sessions.filter(s => s.type === 'work').length}
             </div>
-            <div className="text-sm text-gray-600">Total Sessions</div>
+            <div className="text-sm text-gray-600 dark:text-gray-300">Total Sessions</div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Export Button */}
+      <div className="flex justify-end">
+        <Button
+          onClick={exportStatistics}
+          variant="outline"
+          className="flex items-center space-x-2"
+        >
+          <Download className="h-4 w-4" />
+          <span>Export Statistics</span>
+        </Button>
       </div>
 
       {/* Detailed Stats */}
@@ -197,20 +241,20 @@ const Statistics: React.FC<StatisticsProps> = ({ completedSessions }) => {
             <CardContent>
               <div className="grid grid-cols-2 gap-6">
                 <div>
-                  <div className="text-3xl font-bold text-blue-600">
+                  <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
                     {thisWeekSessions.length}
                   </div>
-                  <div className="text-sm text-gray-600">Work Sessions</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-300">Work Sessions</div>
                 </div>
                 <div>
-                  <div className="text-3xl font-bold text-green-600">
+                  <div className="text-3xl font-bold text-green-600 dark:text-green-400">
                     {formatTime(weeklyFocusTime)}
                   </div>
-                  <div className="text-sm text-gray-600">Focus Time</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-300">Focus Time</div>
                 </div>
               </div>
-              <div className="mt-4 pt-4 border-t border-gray-200">
-                <div className="text-sm text-gray-600">
+              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div className="text-sm text-gray-600 dark:text-gray-300">
                   Average: {Math.round(weeklyFocusTime / 7 / 60)} minutes per day
                 </div>
               </div>
@@ -226,20 +270,20 @@ const Statistics: React.FC<StatisticsProps> = ({ completedSessions }) => {
             <CardContent>
               <div className="grid grid-cols-2 gap-6">
                 <div>
-                  <div className="text-3xl font-bold text-blue-600">
+                  <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
                     {thisMonthSessions.length}
                   </div>
-                  <div className="text-sm text-gray-600">Work Sessions</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-300">Work Sessions</div>
                 </div>
                 <div>
-                  <div className="text-3xl font-bold text-green-600">
+                  <div className="text-3xl font-bold text-green-600 dark:text-green-400">
                     {formatTime(monthlyFocusTime)}
                   </div>
-                  <div className="text-sm text-gray-600">Focus Time</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-300">Focus Time</div>
                 </div>
               </div>
-              <div className="mt-4 pt-4 border-t border-gray-200">
-                <div className="text-sm text-gray-600">
+              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div className="text-sm text-gray-600 dark:text-gray-300">
                   Average: {Math.round(monthlyFocusTime / 30 / 60)} minutes per day
                 </div>
               </div>
@@ -256,21 +300,21 @@ const Statistics: React.FC<StatisticsProps> = ({ completedSessions }) => {
               <div className="space-y-4">
                 {dailyData.map((day, index) => (
                   <div key={day.date} className="flex items-center space-x-4">
-                    <div className="w-16 text-sm text-gray-600">
+                    <div className="w-16 text-sm text-gray-600 dark:text-gray-300">
                       {new Date(day.date).toLocaleDateString('en', { weekday: 'short' })}
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center space-x-2">
                         <div 
-                          className="bg-blue-500 rounded-full h-2 transition-all duration-300"
+                          className="bg-blue-500 dark:bg-blue-400 rounded-full h-2 transition-all duration-300"
                           style={{ width: `${(day.sessions / maxSessions) * 100}%`, minWidth: day.sessions > 0 ? '8px' : '0' }}
                         />
-                        <span className="text-sm text-gray-600">
+                        <span className="text-sm text-gray-600 dark:text-gray-300">
                           {day.sessions} sessions
                         </span>
                       </div>
                     </div>
-                    <div className="w-16 text-sm text-gray-600 text-right">
+                    <div className="w-16 text-sm text-gray-600 dark:text-gray-300 text-right">
                       {formatTime(day.focusTime)}
                     </div>
                   </div>
